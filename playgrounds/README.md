@@ -1,0 +1,1 @@
+This directory contains jupiter notebooks that were used to try and test the code. These are just quick and dirty implementations to play around with some methods.

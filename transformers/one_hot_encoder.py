@@ -20,7 +20,7 @@ class CustomOneHotEncoder(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None, **fit_params):
         # cast numerical columns to strings
         for col in X[self.columns].select_dtypes(exclude = ["object"]).columns:
-            X[col] = X[col].astype('str')
+            X.loc[:,col] = X[col].astype('str')
         one_hots = pd.get_dummies(X[self.columns], prefix=self.columns)
         missing_cols = set(self.allowed_columns) - set(one_hots.columns)
         for c in missing_cols:

@@ -18,9 +18,9 @@ class FillNaTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
         for col in self.nan_flag:
-            X[col+'_nan'] = X[col].isnull() * 1
-        X[self.median] = X[self.median].fillna(self.train_median)
-        X[self.zero] = X[self.zero].fillna(0)
+            X.loc[:, col+'_nan'] = X[col].isnull() * 1
+        X.loc[:, self.median] = X[self.median].fillna(self.train_median)
+        X.loc[:, self.zero] = X[self.zero].fillna(0)
         for key, val in self.from_dict.items():
-            X[key] = X[key].fillna(val)
+            X.loc[:, key] = X[key].fillna(val)
         return X

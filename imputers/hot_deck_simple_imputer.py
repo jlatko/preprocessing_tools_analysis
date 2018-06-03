@@ -11,16 +11,16 @@ class HotDeckSimpleImputer(BaseEstimator, TransformerMixin):
 
     def fit(self, X, y=None, **fit_params):
         self.clusterer = KMeans(n_clusters=self.k)
-        without_na = X.dropna(axis=0)
+        # without_na = X.dropna(axis=0)
 
         # fit KMeans to other columns
-        without_target_cols = without_na.drop(self.columns, axis=1)
+        without_target_cols = X.drop(self.columns, axis=1)
         self.clusterer.fit(without_target_cols)
 
-        just_target_cols = without_na[self.columns]
+        just_target_cols = X[self.columns]
         # get mean of specified attributes per each cluster
         just_target_cols['cluster'] = self.clusterer.predict(without_target_cols)
-        self.values_per_cluster = just_target_cols.groupby('cluster').apply(np.mean)
+        self.values_per_cluster = just_target_cols.groupby('cluster').apply(np.nanmean)
         return self
 
     def transform(self, X):

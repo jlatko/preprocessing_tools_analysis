@@ -2,14 +2,17 @@ import pandas as pd
 import numpy as np
 from sklearn.feature_selection import SelectFromModel
 from sklearn.linear_model import LogisticRegression, LinearRegression, Lasso
+from sklearn.metrics import make_scorer
 from sklearn.model_selection import cross_val_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.neighbors import KNeighborsRegressor
 
-from diagnostics.evaluation import fit_and_eval
+from diagnostics.evaluation import fit_and_eval, weighted_quad_kappa
 from imputers.hot_deck_full_imputer import HotDeckFullImputer, HotDeckColImputer
 from imputers.hot_deck_simple_imputer import HotDeckSimpleImputer
 from imputers.model_based import ModelBasedImputer
+from imputers.model_based_imputer import ModelBasedFullImputer
 from transformers.box_cox import BoxCoxTransformer
 from transformers.clip_labels import LabelsClipper
 from transformers.feature_dropper import FeatureDropper
@@ -26,7 +29,7 @@ TRAIN = './data/train.csv'
 TEST = './data/test.csv'
 
 def get_data():
-    data = pd.read_csv(TRAIN).head(100)
+    data = pd.read_csv(TRAIN)
 
     data.set_index('Id')
     continuous = ['Product_Info_4', 'Ins_Age', 'Ht', 'Wt', 'BMI', 'Employment_Info_1', 'Employment_Info_4',
@@ -72,9 +75,6 @@ if __name__ == "__main__":
         'Family_Hist_4': 0.7,
         'Family_Hist_5': 2
     }
-
-
-
     pipe = Pipeline([
         ('binner', CustomBinner(BINNER_CONFIG)),
         # ('fillna', FillNaTransformer(
@@ -85,23 +85,26 @@ if __name__ == "__main__":
         #     from_dict={'Medical_History_1': 300}
         # )),
         ('drop', FeatureDropper(features_to_drop)),
+        # ('zero_filler', ZeroFiller()),
         ('onehot', CustomOneHotEncoder(columns=categorical)),
         # TODO: implement own scaler that ignores missing values
-        ('filler', RegressionFiller(columns=left_numerical)),
-        # ('filler', ModelBasedImputer(columns=left_numerical, model=LinearRegression())),
-        # ('zero_filler', ZeroFiller()),
+        # ('filler', RegressionFiller(columns=left_numerical)),
         # ('boxcox', BoxCoxTransformer(lambdas_per_column)),
-        # ('scale', StandardScaler()),
+        # ('filler', ModelBasedFullImputer(columns=left_numerical, model=KNeighborsRegressor(n_neighbors=19))),
         # ('classifier', LogisticRegression()),
         # ('filler', HotDeckColImputer('Medical_History_1')),
-        # ('filler', HotDeckFullImputer([(col, 5) for col in left_numerical])),
-        # ('filler', HotDeckSimpleImputer(left_numerical)),
+        # ('filler', HotDeckFullImputer([(col, 20) for col in left_numerical])),
+        ('filler', HotDeckSimpleImputer(left_numerical)),
+        ('scale', StandardScaler()),
         # ('selector', SelectFromModel(Lasso(alpha=0.0003, normalize=True), threshold='mean')),
         ('classifier', LabelsClipper(LinearRegression())),
     ])
-    # score = cross_val_score(pipe, train.copy(), labels, cv=3, n_jobs=8).mean()
+
+
+
+    # score = cross_val_score(pipe, train.copy(), labels, cv=3, n_jobs=8, scoring=make_scorer(weighted_quad_kappa)).mean()
     # print(score)
-    print(fit_and_eval(pipe, train.copy(), labels, k=5))
+    print(fit_and_eval(pipe, train.copy(), labels, k=3))
 
 
 

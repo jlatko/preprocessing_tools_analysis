@@ -48,7 +48,7 @@ def fit_and_eval(model, X, y, k=3):
     return Parallel(n_jobs=8)(delayed(fit_and_eval_single)(
         clone(model),
         X.iloc[train_index].copy(), X.iloc[test_index].copy(),
-        y[train_index], y[test_index]
+        y[train_index].copy(), y[test_index].copy()
     ) for train_index, test_index in kf.split(X))
 
 #
