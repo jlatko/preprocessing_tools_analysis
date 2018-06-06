@@ -24,22 +24,6 @@ from transformers.custom_binner import CustomBinner
 from imputers.regression_filler import RegressionFiller
 from imputers.zero_filler import ZeroFiller
 
-DATA_FILE = './data/data.csv'
-TRAIN = './data/train.csv'
-TEST = './data/test.csv'
-
-def get_data():
-    data = pd.read_csv(TRAIN)
-
-    data.set_index('Id')
-    continuous = ['Product_Info_4', 'Ins_Age', 'Ht', 'Wt', 'BMI', 'Employment_Info_1', 'Employment_Info_4',
-                  'Employment_Info_6', 'Insurance_History_5', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_4',
-                  'Family_Hist_5']
-    discrete = ['Medical_History_1', 'Medical_History_10', 'Medical_History_15', 'Medical_History_24', 'Medical_History_32']
-    dummy = [col for col in data.columns if col.startswith('Medical_Keyword')]
-    categorical = list(set(data.columns) - set(continuous) - set(discrete) - set(dummy) - {'Response', 'Id'})
-    labels = data['Response']
-    return data, labels, continuous, discrete, dummy, categorical
 
 
 if __name__ == "__main__":
