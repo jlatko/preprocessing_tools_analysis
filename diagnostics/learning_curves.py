@@ -4,7 +4,8 @@ from sklearn.model_selection import learning_curve
 
 
 def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
-                        n_jobs=1, train_sizes=np.linspace(.2, 1.0, 5)):
+                        n_jobs=1, train_sizes=np.linspace(.2, 1.0, 5),
+                        scoring="neg_mean_squared_error"):
     """
     Generate a simple plot of the test and training learning curve.
 
@@ -52,7 +53,7 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
     plt.xlabel("Training examples")
     plt.ylabel("Score")
     train_sizes, train_scores, test_scores = learning_curve(
-        estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes, scoring="neg_mean_squared_error")
+        estimator, X, y, cv=cv, n_jobs=n_jobs, train_sizes=train_sizes, scoring=scoring)
     train_scores_mean = -np.mean(train_scores, axis=1)
     train_scores_std = -np.std(train_scores, axis=1)
     test_scores_mean = -np.mean(test_scores, axis=1)

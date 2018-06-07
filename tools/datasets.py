@@ -15,7 +15,8 @@ def get_prudential():
     dummy = [col for col in data.columns if col.startswith('Medical_Keyword')]
     categorical = list(set(data.columns) - set(continuous) - set(discrete) - set(dummy) - {'Response', 'Id'})
     labels = data['Response']
-    return data, labels, continuous, discrete, dummy, categorical
+    target = 'Response'
+    return data, labels, continuous, discrete, dummy, categorical, target
 
 
 BOSTON = './data/boston/data.csv'
@@ -30,7 +31,8 @@ def get_boston():
     dummy = ['chas']
     categorical = []
     labels = data['medv']
-    return data, labels, continuous, discrete, dummy, categorical
+    target = 'medv'
+    return data, labels, continuous, discrete, dummy, categorical, target
 
 
 HEART = './data/heart_disease/data.csv'
@@ -44,7 +46,8 @@ def get_heart():
     dummy = ['sex', 'fbs', 'exang']
     categorical = ['thal', 'chest_pain', 'restecg']
     labels = data['num']
-    return data, labels, continuous, discrete, dummy, categorical
+    target = 'num'
+    return data, labels, continuous, discrete, dummy, categorical, target
 
 
 HOUSES = './data/houses/data.csv'
@@ -68,4 +71,5 @@ def get_houses():
     dummy = [ ]
     categorical = list(set(data.columns) - set(continuous) - set(discrete) - set(dummy) - {'SalePrice', 'Id'})
     labels = data['SalePrice']
-    return data, labels, continuous, discrete, dummy, categorical
+    target = 'SalePrice'
+    return data, labels, continuous, discrete, dummy, categorical, target

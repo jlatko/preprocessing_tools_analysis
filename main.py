@@ -88,7 +88,7 @@ if __name__ == "__main__":
 
     # score = cross_val_score(pipe, train.copy(), labels, cv=3, n_jobs=8, scoring=make_scorer(weighted_quad_kappa)).mean()
     # print(score)
-    print(fit_and_eval(pipe, train.copy(), labels, k=3))
+    # print(fit_and_eval(pipe, train.copy(), labels, k=3))
 
 
 
