@@ -4,10 +4,14 @@ PRUDENTIAL = './data/prudential/data.csv'
 PRUDENTIAL_TRAIN = './data/prudential/train.csv'
 PRUDENTIAL_TEST = './data/prudential/test.csv'
 
-def get_prudential():
-    data = pd.read_csv(PRUDENTIAL_TRAIN)
+def get_prudential(test=False):
+    if test:
+        data = pd.read_csv(PRUDENTIAL_TEST)
+    else:
+        data = pd.read_csv(PRUDENTIAL_TRAIN)
 
     data.set_index('Id')
+    data = data.drop('Id', axis=1)
     continuous = ['Product_Info_4', 'Ins_Age', 'Ht', 'Wt', 'BMI', 'Employment_Info_1', 'Employment_Info_4',
                   'Employment_Info_6', 'Insurance_History_5', 'Family_Hist_2', 'Family_Hist_3', 'Family_Hist_4',
                   'Family_Hist_5']
@@ -23,10 +27,13 @@ BOSTON = './data/boston/data.csv'
 BOSTON_TRAIN = './data/boston/train.csv'
 BOSTON_TEST = './data/boston/test.csv'
 
-def get_boston():
-    data = pd.read_csv(BOSTON_TRAIN)
+def get_boston(test=False):
+    if test:
+        data = pd.read_csv(BOSTON_TEST)
+    else:
+        data = pd.read_csv(BOSTON_TRAIN)
 
-    continuous = ['crim', 'zn', 'noc', 'indus', 'rm', 'age', 'tax', 'ptratio', 'b', 'lstat']
+    continuous = ['crim', 'zn', 'nox', 'indus', 'rm', 'age', 'tax', 'ptratio', 'b', 'lstat']
     discrete = []
     dummy = ['chas']
     categorical = []
@@ -39,8 +46,11 @@ HEART = './data/heart_disease/data.csv'
 HEART_TRAIN = './data/heart_disease/train.csv'
 HEART_TEST = './data/heart_disease/test.csv'
 
-def get_heart():
-    data = pd.read_csv(HEART_TRAIN)
+def get_heart(test=False):
+    if test:
+        data = pd.read_csv(HEART_TEST)
+    else:
+        data = pd.read_csv(HEART_TRAIN)
     continuous = ['chol', 'thalach', 'oldpeak', 'trestbps']
     discrete = ['age', 'slope', 'ca']
     dummy = ['sex', 'fbs', 'exang']
@@ -54,9 +64,13 @@ HOUSES = './data/houses/data.csv'
 HOUSES_TRAIN = './data/houses/train.csv'
 HOUSES_TEST = './data/houses/test.csv'
 
-def get_houses():
-    data = pd.read_csv(HOUSES_TRAIN)
+def get_houses(test=False):
+    if test:
+        data = pd.read_csv(HOUSES_TEST)
+    else:
+        data = pd.read_csv(HOUSES_TRAIN)
     data.set_index('Id')
+    data = data.drop('Id', axis=1)
 
     continuous = ['LotFrontage', 'LotArea',
        'MasVnrArea', 'BsmtFinSF1',

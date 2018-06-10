@@ -7,3 +7,4 @@ from transformers.feature_selector import *
 from transformers.one_hot_encoder import *
 from transformers.polynomials_adder import *
 from transformers.skewness_handler import *
+from transformers.outliers_clipper import *

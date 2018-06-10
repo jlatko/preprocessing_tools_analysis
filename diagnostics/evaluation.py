@@ -1,7 +1,7 @@
 import time
 import numpy as np
 from sklearn import clone
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, mean_squared_error, accuracy_score
 from sklearn.model_selection import KFold
 from joblib import Parallel, delayed
 
@@ -11,7 +11,13 @@ def histogram(y):
         hist[r-1] += 1
     return hist
 
-def weighted_quad_kappa(y_test, y_predicted, **kwargs):
+def rmse(y_test, y_predicted, **kwargs):
+    return np.sqrt(mean_squared_error(y_test, y_predicted))
+
+def error_rate(y_test, y_predicted, **kwargs):
+    return 1 - accuracy_score(y_test, y_predicted)
+
+def rev_weighted_quad_kappa(y_test, y_predicted, **kwargs):
     conf_mat = confusion_matrix(y_test, y_predicted, labels=[1,2,3,4,5,6,7,8])
     N = 8
     total = len(y_test)
@@ -27,7 +33,7 @@ def weighted_quad_kappa(y_test, y_predicted, **kwargs):
             numerator += w * conf_mat[i][j]
             denominator += w * expected_count
 
-    return 1.0 - numerator / denominator
+    return numerator / denominator
 
 def fit_and_eval_single(model, X_train, X_test, y_train, y_test):
     start = time.time()
@@ -40,7 +46,7 @@ def fit_and_eval_single(model, X_train, X_test, y_train, y_test):
     end = time.time()
     test_time = end - start
 
-    score = weighted_quad_kappa(y_test, y_predicted)
+    score = rev_weighted_quad_kappa(y_test, y_predicted)
     return score, train_time, test_time
 
 def fit_and_eval(model, X, y, k=3):
