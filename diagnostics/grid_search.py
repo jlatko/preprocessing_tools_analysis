@@ -7,7 +7,6 @@ from sklearn import clone
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import ParameterGrid, cross_val_score
 
-from diagnostics.evaluation import weighted_quad_kappa
 
 
 def plot_grid(grid, k_options, l_options, m_options_length, k_label="k options"):
@@ -49,17 +48,16 @@ def eval_single(model, data, target, X_test, y_test, scorer, outliers=None):
         labels_std = data[target].std()
         X_train = data.drop(target, axis=1)
         y_train = data[target].clip(labels_mean - 3 * labels_std, labels_mean + 3 * labels_std)
-
     elif outliers == 'remove':
         labels_mean = data[target].mean()
         labels_std = data[target].std()
         data_filtered = data[(data[target] - labels_mean).abs() <  3 * labels_std]
         X_train = data_filtered.drop(target, axis=1)
         y_train = data_filtered[target]
-
     else:
         X_train = data.drop(target, axis=1)
         y_train = data[target]
+
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
     return scorer(y_test, y_pred)
@@ -75,7 +73,7 @@ def evaluate_params(model, params, data, target, cv, scorer, outliers=None):
         data_train = data.loc[train_index].copy()
         X_test = data_test.drop(target, axis=1)
         y_test = data_test[target]
-        scores.append(eval_single(model.clone(), data_train, target, X_test, y_test, scorer, outliers))
+        scores.append(eval_single(clone(model), data_train, target, X_test, y_test, scorer, outliers))
     scores = np.array(scores)
     return {
         'score': scores.mean(),
@@ -85,7 +83,7 @@ def evaluate_params(model, params, data, target, cv, scorer, outliers=None):
 
 
 def custom_grid_search(model, grid, data, target, cv, scorer, outliers=None):
-    return Parallel(n_jobs=-1)(
+    return Parallel(n_jobs=7)(
         delayed(evaluate_params)(
             clone(model),
             params,
