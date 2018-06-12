@@ -1,3 +1,7 @@
+import json
+import pickle
+import traceback
+
 from sklearn.model_selection import StratifiedKFold
 import pandas as pd
 import numpy as np
@@ -43,9 +47,9 @@ def get_class(params):
 
 TEST_NAME = 'scaling'
 sets = [
-    'prudential',
-    'boston',
-    'houses',
+    # 'prudential',
+    # 'boston',
+    # 'houses',
     'heart'
 ]
 outliers = [
@@ -150,7 +154,13 @@ for dataset in sets:
         print("Done in: ", end - start, ' s')
         print(result)
         results[o] = result
-    plot_and_save_results(results, get_class, './results/' + TEST_NAME + "_" + dataset, precision=precision)
+    try:
+        with open('./results/' + TEST_NAME + "_" + dataset + '_pickle.b', 'wb') as fp:
+            pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
+    except:
+        print("error")
+        traceback.print_exc()
+    # plot_and_save_results(results, get_class, './results/' + TEST_NAME + "_" + dataset, precision=precision)
 
 #     start = time()
 #     result = custom_grid_search(model, params, data, target, cv, scorer, outliers=0)

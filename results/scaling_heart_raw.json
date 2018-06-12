@@ -1,0 +1,11 @@
+{
+    "0": [
+        {
+            "score": 0.16227685103892306,
+            "std": 0.042597550837761594,
+            "params": {
+                "binner": null,
+                "binner2": null,
+                "boxcox": null,
+                "clipper": null,
+                "onehot": 

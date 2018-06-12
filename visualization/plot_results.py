@@ -1,17 +1,23 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib
 import json
 import pickle
 from collections import defaultdict
 import traceback
 
 
-W = 0.5
-W2 = 0.23
-W3 = 0.23
+W = 0.4
+W2 = 0.26
+W3 = 0.26
+font = {'family' : 'normal',
+        # 'weight' : 'bold',
+        'size'   : 22}
+
+matplotlib.rc('font', **font)
 
 def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=0, precision=4):
-    fig = plt.figure()
+    fig = plt.figure(figsize=(11,8))
     COLORS = 'bgrcmyk'
     legend = {}
     i = 0
@@ -29,13 +35,17 @@ def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=
         offsets.append(offset + (len(settings) + 1) * W3 / 2.0)
         for setting, results in settings.items():
             offset += W2
-            plt.bar(offset, results['mean'], yerr=results['std'], width=W3, color=legend[setting])
+            plt.bar(offset, results['mean'],
+                    # yerr=results['std'],
+                    width=W3, color=legend[setting])
+
+            plt.errorbar(offset + 0.3 * W3, results['mean'], yerr=results['std'], color='k')
             # if (results['mean'] - results['std'] - ymin) < 0.4 * (ymax - ymin):
             if results['mean']  < ymax - 0.3 * (ymax - ymin):
-                plt.text(offset - 0.49*W3, results['mean'] , " {num:.{pr}f}".format(num=results['mean'], pr=precision), ha='left', va='bottom', rotation='vertical')
+                plt.text(offset - 0.46*W3, results['mean'] , " {num:.{pr}f}".format(num=results['mean'], pr=precision), ha='left', va='bottom', rotation='vertical')
                 # plt.text(offset, results['mean'] + results['std'] * 1.05, "{num:.{pr}f}".format(num=results['mean'], pr=precision), ha='center', va='bottom', rotation='vertical')
             else:
-                plt.text(offset - 0.49*W3 , results['mean'], "{num:.{pr}f} ".format(num=results['mean'], pr=precision), ha='left', va='top', rotation='vertical')
+                plt.text(offset - 0.46*W3 , results['mean'], "{num:.{pr}f} ".format(num=results['mean'], pr=precision), ha='left', va='top', rotation='vertical')
                 # plt.text(offset - 0.5*W3 , results['mean'] - results['std'], "{num:.{pr}f}".format(num=results['mean'], pr=precision), ha='left', va='top', rotation='vertical')
 
     if ymax != None:
@@ -45,14 +55,18 @@ def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=
 
     if title:
         plt.title(title)
-    plt.xticks(offsets, ticks)
+    plt.xticks(offsets, ticks, rotation=20)
     if ylabel:
         plt.ylabel(ylabel)
     plt.legend(handles=[mpatches.Patch(color=c, label=l) for l, c in legend.items()], loc='best')
-    plt.show(block=False)
+
+    plt.tight_layout()
 
     if save_path:
+        plt.draw()
         fig.savefig(save_path)
+    else:
+        plt.show(block=False)
 
 
 def plot_and_save_results(results, get_model_and_label, path, precision=4, ymax_alpha=1.02, ymin_alpha=0.98,

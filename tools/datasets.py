@@ -26,15 +26,25 @@ def get_prudential(test=False):
 BOSTON = './data/boston/data.csv'
 BOSTON_TRAIN = './data/boston/train.csv'
 BOSTON_TEST = './data/boston/test.csv'
+BOSTON_MISSING = './data/boston/data_missing.csv'
+BOSTON_TRAIN_MISSING = './data/boston/train_missing.csv'
+BOSTON_TEST_MISSING = './data/boston/test_missing.csv'
 
-def get_boston(test=False):
-    if test:
-        data = pd.read_csv(BOSTON_TEST)
+def get_boston(test=False, missing=False):
+    if missing:
+        if test:
+            data = pd.read_csv(BOSTON_TEST_MISSING)
+        else:
+            data = pd.read_csv(BOSTON_TRAIN_MISSING)
     else:
-        data = pd.read_csv(BOSTON_TRAIN)
+        if test:
+            data = pd.read_csv(BOSTON_TEST)
+        else:
+            data = pd.read_csv(BOSTON_TRAIN)
 
-    continuous = ['crim', 'zn', 'nox', 'indus', 'rm', 'age', 'tax', 'ptratio', 'b', 'lstat']
-    discrete = []
+
+    continuous = ['crim', 'zn', 'nox', 'indus', 'rm', 'age', 'tax', 'ptratio', 'b', 'lstat','dis']
+    discrete = ['rad']
     dummy = ['chas']
     categorical = []
     labels = data['medv']
@@ -45,12 +55,22 @@ def get_boston(test=False):
 HEART = './data/heart_disease/data.csv'
 HEART_TRAIN = './data/heart_disease/train.csv'
 HEART_TEST = './data/heart_disease/test.csv'
+HEART_MISSING = './data/heart_disease/data_missing.csv'
+HEART_TRAIN_MISSING = './data/heart_disease/train_missing.csv'
+HEART_TEST_MISSING = './data/heart_disease/test_missing.csv'
 
-def get_heart(test=False):
-    if test:
-        data = pd.read_csv(HEART_TEST)
+def get_heart(test=False, missing=False):
+    if missing:
+        if test:
+            data = pd.read_csv(HEART_TEST_MISSING)
+        else:
+            data = pd.read_csv(HEART_TRAIN_MISSING)
     else:
-        data = pd.read_csv(HEART_TRAIN)
+        if test:
+            data = pd.read_csv(HEART_TEST)
+        else:
+            data = pd.read_csv(HEART_TRAIN)
+
     continuous = ['chol', 'thalach', 'oldpeak', 'trestbps']
     discrete = ['age', 'slope', 'ca']
     dummy = ['sex', 'fbs', 'exang']
