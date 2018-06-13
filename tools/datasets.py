@@ -20,7 +20,8 @@ def get_prudential(test=False):
     categorical = list(set(data.columns) - set(continuous) - set(discrete) - set(dummy) - {'Response', 'Id'})
     labels = data['Response']
     target = 'Response'
-    return data, labels, continuous, discrete, dummy, categorical, target
+    missing_cols = continuous + discrete
+    return data, labels, continuous, discrete, dummy, categorical, target, missing_cols
 
 
 BOSTON = './data/boston/data.csv'
@@ -49,7 +50,8 @@ def get_boston(test=False, missing=False):
     categorical = []
     labels = data['medv']
     target = 'medv'
-    return data, labels, continuous, discrete, dummy, categorical, target
+    missing_cols = ['crim', 'zn', 'nox', 'indus', 'rm', 'age', 'tax', 'ptratio', 'b','dis']
+    return data, labels, continuous, discrete, dummy, categorical, target, missing_cols
 
 
 HEART = './data/heart_disease/data.csv'
@@ -77,7 +79,9 @@ def get_heart(test=False, missing=False):
     categorical = ['thal', 'chest_pain', 'restecg']
     labels = data['num']
     target = 'num'
-    return data, labels, continuous, discrete, dummy, categorical, target
+    # 4 missing cases for ca
+    missing_cols = ['trestbps', 'chol', 'thalach', 'oldpeak']
+    return data, labels, continuous, discrete, dummy, categorical, target, missing_cols
 
 
 HOUSES = './data/houses/data.csv'
@@ -106,4 +110,5 @@ def get_houses(test=False):
     categorical = list(set(data.columns) - set(continuous) - set(discrete) - set(dummy) - {'SalePrice', 'Id'})
     labels = data['SalePrice']
     target = 'SalePrice'
-    return data, labels, continuous, discrete, dummy, categorical, target
+    missing_cols = ['LotFrontage', 'MasVnrArea', 'GarageYrBlt']
+    return data, labels, continuous, discrete, dummy, categorical, target, missing_cols

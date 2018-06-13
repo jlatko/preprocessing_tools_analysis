@@ -102,3 +102,74 @@ def get_class(params):
     #         'predictor': predictors
     #     },
     # ]
+
+
+# =========   SCALING  =====================
+def get_class(params):
+    model_names = []
+    if params['scaler'] and isinstance(params['scaler'], StandardScaler):
+        model_names.append('standard')
+    if params['scaler'] and isinstance(params['scaler'], RobustScaler):
+        model_names.append('robust')
+    if params['boxcox']:
+        model_names.append('boxcox')
+    if not model_names:
+        model_name =  'base'
+    else:
+        model_name = ', '.join(model_names)
+
+    if params['clipper']:
+        label = 'clipped'
+    else:
+        label = 'not clipped'
+    return model_name, label
+
+    params = [
+        {  # BASELINE
+            'onehot': [one_hot],
+            'clipper': [None, OutliersClipper(continuous)],
+            'binner': [None],
+            'binner2': [None],
+            'boxcox': [None, BoxCoxTransformer(BOX_COX)],
+            'scaler': [None, StandardScaler(), RobustScaler()],
+            'predictor': predictors
+        },
+    ]
+
+
+#  ========== Imputing
+
+def get_class(params):
+    model_names = []
+    imputer1 = params['simple_imputer']
+    if imputer1:
+        if imputer1.mean:
+            model_names.append('median')
+        if imputer1.median:
+            model_names.append('mean')
+        if imputer1.nan_flag:
+            model_names.append('nan')
+    else:
+        model_names.append('zero')
+    model_name = ', '.join(model_names)
+
+    label = type(params['predictor']).__name__
+    return model_name, label
+
+    params = [
+        {  # BASELINE
+            'onehot': [one_hot],
+            'clipper': [None],
+            'binner': [None],
+            'binner2': [None],
+            'simple_imputer': [
+                FillNaTransformer(),
+                # FillNaTransformer(mean=missing),
+                # FillNaTransformer(median=missing)
+            ],
+            'simple_imputer__nan_flag': [[], missing],
+            'main_imputer': [None],
+            'boxcox': [BoxCoxTransformer(BOX_COX)],
+            'scaler': [StandardScaler()],
+            'predictor': predictors
+        },

@@ -43,18 +43,67 @@ def get_class(params):
         else:
             model_names.append('0')
     if imputer2:
-        model_names = ['d.tree'] + model_names
+        model_names = ['h-deck'] + model_names
     if params['dropper__drop']:
         model_names.append('nan')
     model_name = ' '.join(model_names)
     if imputer2:
-        label = 'max depth=' + str(params['main_imputer__model__max_depth'])
+        label = 'k=' + str(params['main_imputer__default_k'])
     else:
         label = 'basic'
     # label = type(params['predictor']).__name__
     return model_name, label
 
-TEST_NAME = 'imputing_dt'
+# def get_class(params):
+#     model_names = []
+#     imputer1 = params['simple_imputer']
+#     imputer2 = params['main_imputer']
+#     if imputer1:
+#         if imputer1.mean:
+#             model_names.append('mn')
+#         elif imputer1.median:
+#             model_names.append('med')
+#         else:
+#             model_names.append('0')
+#     if imputer2:
+#         model_names = ['h-knn'] + model_names
+#     if params['dropper__drop']:
+#         model_names.append('nan')
+#     model_name = ' '.join(model_names)
+#     if imputer2:
+#         label = 'k=' + str(params['main_imputer__model__n_neighbors'])
+#     else:
+#         label = 'basic'
+#     # label = type(params['predictor']).__name__
+#     return model_name, label
+
+# def get_class(params):
+#     labels = []
+#     imputer1 = params['simple_imputer']
+#     imputer2 = params['main_imputer']
+#     if imputer1:
+#         if imputer1.mean:
+#             labels.append('mn')
+#         elif imputer1.median:
+#             labels.append('med')
+#         else:
+#             labels.append('0')
+#     if imputer2:
+#         model_name = type(params['main_imputer__model']).__name__
+#     else:
+#         model_name = 'base'
+#     if params['dropper__drop']:
+#         labels.append('nan')
+#     label = ' '.join(labels)
+#     # if imputer2:
+#     #     label = 'k=' + str(params['main_imputer__model__n_neighbors'])
+#     # else:
+#     #     label = 'basic'
+#     # label = type(params['predictor']).__name__
+#     return model_name, label
+
+
+TEST_NAME = 'imputing_1'
 sets = [
     # 'prudential',
     'boston',
@@ -197,14 +246,9 @@ for dataset in sets:
             ],
             'simple_imputer__nan_flag': [missing],
             'main_imputer': [
-                # HotDeckFullImputer(col_k_pairs=[(col, None) for col in missing]),
-                ModelBasedFullImputer(columns=missing, model=DecisionTreeRegressor())
+                HotDeckFullImputer(col_k_pairs=[(col, None) for col in missing])
             ],
-            # 'main_imputer__model': [
-            #     KNeighborsRegressor()
-            # ],
-            'main_imputer__model__max_depth': [None, 2, 4, 8, 16, 32],
-            # 'main_imputer__default_k': [3, 5, 13, 17],
+            'main_imputer__default_k': [3, 5, 7, 9, 13],
             'dropper__drop': [[], [col + "_nan" for col in missing]], # filter out nan flags
             'boxcox': [None],
             'scaler': [None],
@@ -237,3 +281,50 @@ for dataset in sets:
 #     model_results[dataset] = result
 # plot_and_save_results(model_results, get_class, './results/' + TEST_NAME + "_multi", precision=4)
 
+
+
+    # params = [
+    #     {  # BASELINE
+    #         'onehot': [one_hot],
+    #         'clipper': [None],
+    #         'binner': [None],
+    #         'binner2': [None],
+    #         'simple_imputer': [
+    #             FillNaTransformer(zero=missing),
+    #             FillNaTransformer(mean=missing),
+    #         ],
+    #         # 'simple_imputer__nan_flag': [missing],
+    #         'main_imputer': [
+    #             None,
+    #             # HotDeckSimpleImputer(columns=missing), # fits to columns without nans
+    #         ],
+    #         'dropper__drop': [[]], # filter out nan flags
+    #         'boxcox': [None],
+    #         'scaler': [None],
+    #         'predictor': predictors
+    #     },
+    #     {  # fill
+    #         'onehot': [one_hot],
+    #         'clipper': [None],
+    #         'binner': [None],
+    #         'binner2': [None],
+    #         'simple_imputer': [
+    #             FillNaTransformer(zero=missing),
+    #             FillNaTransformer(mean=missing),
+    #         ],
+    #         'simple_imputer__nan_flag': [missing],
+    #         'main_imputer': [
+    #             # HotDeckFullImputer(col_k_pairs=[(col, None) for col in missing]),
+    #             ModelBasedFullImputer(columns=missing, model=KNeighborsRegressor())
+    #         ],
+    #         # 'main_imputer__model': [
+    #         #     KNeighborsRegressor()
+    #         # ],
+    #         'main_imputer__model__n_neighbors': [1, 3, 5, 7, 9],
+    #         # 'main_imputer__default_k': [3, 5, 13, 17],
+    #         'dropper__drop': [[], [col + "_nan" for col in missing]], # filter out nan flags
+    #         'boxcox': [None],
+    #         'scaler': [None],
+    #         'predictor': predictors
+    #     },
+    # ]
