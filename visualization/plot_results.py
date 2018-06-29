@@ -16,7 +16,7 @@ font = {'family' : 'normal',
 
 matplotlib.rc('font', **font)
 
-def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=0, precision=4):
+def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=0, precision=4, leg='best'):
     fig = plt.figure(figsize=(11,8))
     COLORS = 'bgrcmyk'
     legend = {}
@@ -29,6 +29,8 @@ def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=
     ticks = []
     offsets = []
     offset = 0
+    if ymin < 0:
+        ymin = 0
     for model, settings in data.items():
         offset += W
         ticks.append(model)
@@ -58,7 +60,7 @@ def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=
     plt.xticks(offsets, ticks, rotation=20)
     if ylabel:
         plt.ylabel(ylabel)
-    plt.legend(handles=[mpatches.Patch(color=c, label=l) for l, c in legend.items()], loc='best')
+    plt.legend(handles=[mpatches.Patch(color=c, label=l) for l, c in legend.items()], loc=leg)
 
     plt.tight_layout()
 

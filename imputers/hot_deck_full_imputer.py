@@ -21,6 +21,7 @@ class HotDeckColImputer(BaseEstimator, TransformerMixin):
 
         # fit KMeans to other columns
         without_target_col = without_na.drop([self.column, self.column + '_nan'], axis=1)
+        # print(without_target_col.shape[0])
         self.clusterer.fit(without_target_col)
 
         just_target_col = without_na[[self.column]]
@@ -32,8 +33,9 @@ class HotDeckColImputer(BaseEstimator, TransformerMixin):
     def transform(self, X):
         with_na = X[X[self.column + '_nan'].astype('bool')]
         without_target_col = with_na.drop([self.column, self.column + '_nan'], axis=1)
-        with_na['cluster'] = self.clusterer.predict(without_target_col)
-        X.loc[X[self.column + '_nan'].astype('bool'), self.column] = with_na['cluster'].map(self.values_per_cluster)
+        if without_target_col.shape[0]:
+            with_na['cluster'] = self.clusterer.predict(without_target_col)
+            X.loc[X[self.column + '_nan'].astype('bool'), self.column] = with_na['cluster'].map(self.values_per_cluster)
         return X
 
 class HotDeckFullImputer(BaseEstimator, TransformerMixin):
@@ -45,7 +47,10 @@ class HotDeckFullImputer(BaseEstimator, TransformerMixin):
         self.default_k = default_k
 
     def fit(self, X, y=None, **fit_params):
-        imputers = [(col + '_imputer', HotDeckColImputer(column=col, k=(k or self.default_k))) for col, k in self.col_k_pairs if col + '_nan' in X.columns]
+        imputers = [
+            (col + '_imputer', HotDeckColImputer(column=col, k=(k or self.default_k)))
+            for col, k in self.col_k_pairs
+            if col + '_nan' in X.columns and ( 0 < X[col + '_nan'].sum() < X.shape[0]) ]
         self.pipe = Pipeline(imputers)
         return self.pipe.fit(X, y)
 

@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.metrics import make_scorer
 from sklearn.model_selection import ParameterGrid, cross_val_score
-
+from tqdm import tqdm
 
 
 def plot_grid(grid, k_options, l_options, m_options_length, k_label="k options"):
@@ -82,8 +82,8 @@ def evaluate_params(model, params, data, target, cv, scorer, outliers=None):
     }
 
 
-def custom_grid_search(model, grid, data, target, cv, scorer, outliers=None):
-    return Parallel(n_jobs=7)(
+def custom_grid_search(model, grid, data, target, cv, scorer, outliers=None, n_jobs=4):
+    return Parallel(n_jobs=n_jobs)(
         delayed(evaluate_params)(
             clone(model),
             params,
@@ -92,5 +92,5 @@ def custom_grid_search(model, grid, data, target, cv, scorer, outliers=None):
             cv,
             scorer,
             outliers
-        ) for params in ParameterGrid(grid)
+        ) for params in tqdm(ParameterGrid(grid))
     )
