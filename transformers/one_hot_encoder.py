@@ -2,6 +2,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import pandas as pd
 
 class CustomOneHotEncoder(BaseEstimator, TransformerMixin):
+    """ Replaces specified categorical features with their one-hot representations. """
+
     # numerical - numerical columns to be treated as categorical
     # columns - columns to use (if None then all categorical variables are included)
     def __init__(self, columns=None, numerical=[]):

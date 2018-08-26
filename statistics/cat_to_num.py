@@ -9,7 +9,6 @@ def apply_across(data, categorical, numerical, metric):
     ] for num in numerical])
 
 
-# TODO improve
 def spearman_with(data, target, numerical):
     return {
         num: stats.spearmanr(data[target], data[num])[0]
@@ -20,6 +19,7 @@ def cross_kruskal(data, categorical, numerical):
     return np.array([[
         stats.kruskal(*list(data.groupby(cat)[num].apply(np.array))) for cat in categorical
     ] for num in numerical])
+
 
 def cross_anova(data, categorical, numerical):
     return np.array([[

@@ -1,7 +1,10 @@
 import argparse
 import json
-
 from visualization.plot_results import plot_results
+
+"""
+Drows and saves plot using results from a json file.
+"""
 
 parser = argparse.ArgumentParser(description='Make plot from json')
 parser.add_argument('json_path', type=str, help='path to json results')
@@ -22,7 +25,8 @@ args = parser.parse_args()
 with open(args.json_path) as f:
     data = json.load(f)
 
-max_std = max(r['std'] for search_results in data.values() for r in search_results.values())
+# max_std = max(r['std'] for search_results in data.values() for r in search_results.values())
+max_std = 0
 max_score = max(r['mean'] for search_results in data.values() for r in search_results.values())
 min_score = min(r['mean'] for search_results in data.values() for r in search_results.values())
 

@@ -60,8 +60,8 @@ def get_class_from_list(setting_list):
 TEST_NAME = 'model_based_feat'
 sets = [
     # 'prudential',
-    # 'boston',
-    # 'houses',
+    'boston',
+    'houses',
     'heart'
 ]
 MISSING = False

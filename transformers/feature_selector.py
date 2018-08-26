@@ -1,6 +1,8 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 
 class FeatureSelector(BaseEstimator, TransformerMixin):
+    """ Selects only specified features and drops the rest. """
+
     def __init__(self, features=[]):
         self.features = features
 

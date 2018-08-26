@@ -1,6 +1,8 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 
 class FillNaTransformer(BaseEstimator, TransformerMixin):
+    """ Fills missing values with mean, median, constant or zero. Adds NaN flag if specified. """
+    
     def __init__(self, mean=[], median=[], zero=[], nan_flag=[], from_dict={}):
         self.median = median
         self.mean = mean

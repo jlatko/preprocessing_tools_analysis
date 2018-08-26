@@ -1,5 +1,7 @@
 import pandas as pd
 
+# The following functions load datasets and basic information about them.
+
 PRUDENTIAL = './data/prudential/data.csv'
 PRUDENTIAL_TRAIN = './data/prudential/train.csv'
 PRUDENTIAL_TEST = './data/prudential/test.csv'

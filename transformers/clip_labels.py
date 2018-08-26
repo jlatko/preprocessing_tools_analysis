@@ -2,6 +2,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 import numpy as np
 
 class LabelsClipper(BaseEstimator, TransformerMixin):
+    """ Wraps the given regressor and returns its predictions rounded and clipped to 1-8. """
+
     def __init__(self, regressor):
         self.regressor = regressor
 

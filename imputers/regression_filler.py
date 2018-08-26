@@ -1,12 +1,11 @@
-from sklearn.base import BaseEstimator, TransformerMixin
-import pandas as pd
 import numpy as np
-from time import time
-
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
 
 
 class RegressionFiller(BaseEstimator, TransformerMixin):
+    """ Imputes blanks using linear regression fitted on the present values. """
+
     def __init__(self, columns):
         self.columns = columns
 

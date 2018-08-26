@@ -7,8 +7,10 @@ from sklearn.pipeline import Pipeline
 
 class HotDeckColImputer(BaseEstimator, TransformerMixin):
     """
-    Uses colname_nan to indicate which rows were nan
+    Imputes missing values using hot-deck method for single column.
+    Uses '<colname>_nan' to indicate which rows were nan
     """
+
     def __init__(self, column, k=8):
         self.column = column
         self.k = k
@@ -17,11 +19,9 @@ class HotDeckColImputer(BaseEstimator, TransformerMixin):
         self.clusterer = KMeans(n_clusters=self.k)
 
         without_na = X[~X[self.column + '_nan'].astype('bool')]
-        with_na = X[X[self.column + '_nan'].astype('bool')]
 
         # fit KMeans to other columns
         without_target_col = without_na.drop([self.column, self.column + '_nan'], axis=1)
-        # print(without_target_col.shape[0])
         self.clusterer.fit(without_target_col)
 
         just_target_col = without_na[[self.column]]
@@ -39,6 +39,8 @@ class HotDeckColImputer(BaseEstimator, TransformerMixin):
         return X
 
 class HotDeckFullImputer(BaseEstimator, TransformerMixin):
+    """ Imputes missing values using hot-deck method for multiple columns by combining several HotDeckColImputers. """
+
     def __init__(self, col_k_pairs, default_k=8):
         """
         col_k_pairs: list of tuples (column name, k or none)

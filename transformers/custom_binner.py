@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 
 class CustomBinner(BaseEstimator, TransformerMixin):
+    """ Applies binning and adds bin number as a numerical variable. """
+
     # dict in form:
     #  { 'column_name': { 'bins': [int] | int, 'values': [int]}  }
     def __init__(self, configuration, nan=False, drop=False):
@@ -38,6 +40,8 @@ class CustomBinner(BaseEstimator, TransformerMixin):
         return X
 
 class CustomBinaryBinner(BaseEstimator, TransformerMixin):
+    """ Applies binning and adds bin number as a one-hot variable. """
+
     # dict in form:
     #  { 'column_name': { 'bins': [int], 'values': [int]}  }
     def __init__(self, configuration, nan=False, drop=False):

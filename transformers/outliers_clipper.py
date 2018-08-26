@@ -1,7 +1,8 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 
-
 class OutliersClipper(BaseEstimator, TransformerMixin):
+    """ Clips the specified attributes to 3 standard deviations from the mean. """
+
     def __init__(self, columns):
         self.columns = columns
 
