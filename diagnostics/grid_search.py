@@ -1,12 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
-# up to 3 grid dimensions (choose max from the last one)
 from joblib import Parallel, delayed
 from sklearn import clone
-from sklearn.metrics import make_scorer
-from sklearn.model_selection import ParameterGrid, cross_val_score
-
+from sklearn.model_selection import ParameterGrid
+from tqdm import tqdm
 
 
 def plot_grid(grid, k_options, l_options, m_options_length, k_label="k options"):
@@ -30,18 +27,7 @@ def plot_grid(grid, k_options, l_options, m_options_length, k_label="k options")
     plt.legend(loc='best')
     plt.show()
 
-
-# for g in ParameterGrid(grid):
-#     rf.set_params(**g)
-#     rf.fit(X,y)
-#     # save if best
-#     if rf.oob_score_ > best_score:
-#         best_score = rf.oob_score_
-#         best_grid = g
-#
-# print "OOB: %0.5f" % best_score
-# print "Grid:", best_grid
-
+# applies specified outlier handling strategy and evaluates the model on given sets
 def eval_single(model, data, target, X_test, y_test, scorer, outliers=None):
     if outliers == 'clip':
         labels_mean = data[target].mean()
@@ -62,9 +48,7 @@ def eval_single(model, data, target, X_test, y_test, scorer, outliers=None):
     y_pred = model.predict(X_test)
     return scorer(y_test, y_pred)
 
-
-
-
+# evaluates model with given config using specified cross validation method
 def evaluate_params(model, params, data, target, cv, scorer, outliers=None):
     scores = []
     model.set_params(**params)
@@ -81,9 +65,9 @@ def evaluate_params(model, params, data, target, cv, scorer, outliers=None):
         'params': params
     }
 
-
-def custom_grid_search(model, grid, data, target, cv, scorer, outliers=None):
-    return Parallel(n_jobs=7)(
+# performs grid search using specified outliers handling strategy
+def custom_grid_search(model, grid, data, target, cv, scorer, outliers=None, n_jobs=4):
+    return Parallel(n_jobs=n_jobs)(
         delayed(evaluate_params)(
             clone(model),
             params,
@@ -92,5 +76,5 @@ def custom_grid_search(model, grid, data, target, cv, scorer, outliers=None):
             cv,
             scorer,
             outliers
-        ) for params in ParameterGrid(grid)
+        ) for params in tqdm(ParameterGrid(grid))
     )

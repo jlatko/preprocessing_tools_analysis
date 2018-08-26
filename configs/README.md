@@ -1,0 +1,1 @@
+This directory contains saved configuration of chosen models and settings used in final configuration. These are the setups that yielded best results during grid search.

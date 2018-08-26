@@ -1,7 +1,8 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 
-
 class PolynomialsAdder(BaseEstimator, TransformerMixin):
+    """ Adds polynomial features. """
+
     def __init__(self, powers_per_column):
         self.powers_per_column = powers_per_column
 

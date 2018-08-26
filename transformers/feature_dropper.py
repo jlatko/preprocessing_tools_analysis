@@ -1,6 +1,8 @@
 from sklearn.base import BaseEstimator, TransformerMixin
 
 class FeatureDropper(BaseEstimator, TransformerMixin):
+    """ Drops specified columns. """
+
     def __init__(self, drop=[]):
         self.drop = drop
 

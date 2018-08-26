@@ -6,7 +6,6 @@ import pickle
 from collections import defaultdict
 import traceback
 
-
 W = 0.4
 W2 = 0.26
 W3 = 0.26
@@ -16,7 +15,7 @@ font = {'family' : 'normal',
 
 matplotlib.rc('font', **font)
 
-def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=0, precision=4):
+def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=0, precision=4, leg='best'):
     fig = plt.figure(figsize=(11,8))
     COLORS = 'bgrcmyk'
     legend = {}
@@ -29,6 +28,8 @@ def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=
     ticks = []
     offsets = []
     offset = 0
+    if ymin < 0:
+        ymin = 0
     for model, settings in data.items():
         offset += W
         ticks.append(model)
@@ -39,9 +40,9 @@ def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=
                     # yerr=results['std'],
                     width=W3, color=legend[setting])
 
-            plt.errorbar(offset + 0.3 * W3, results['mean'], yerr=results['std'], color='k')
+            # plt.errorbar(offset + 0.3 * W3, results['mean'], yerr=results['std'], color='k')
             # if (results['mean'] - results['std'] - ymin) < 0.4 * (ymax - ymin):
-            if results['mean']  < ymax - 0.3 * (ymax - ymin):
+            if results['mean']  < ymax - 0.5 * (ymax - ymin):
                 plt.text(offset - 0.46*W3, results['mean'] , " {num:.{pr}f}".format(num=results['mean'], pr=precision), ha='left', va='bottom', rotation='vertical')
                 # plt.text(offset, results['mean'] + results['std'] * 1.05, "{num:.{pr}f}".format(num=results['mean'], pr=precision), ha='center', va='bottom', rotation='vertical')
             else:
@@ -58,7 +59,7 @@ def plot_results(data, title=None, ylabel='error', save_path=None, ymax=1, ymin=
     plt.xticks(offsets, ticks, rotation=20)
     if ylabel:
         plt.ylabel(ylabel)
-    plt.legend(handles=[mpatches.Patch(color=c, label=l) for l, c in legend.items()], loc='best')
+    plt.legend(handles=[mpatches.Patch(color=c, label=l) for l, c in legend.items()], loc=leg)
 
     plt.tight_layout()
 

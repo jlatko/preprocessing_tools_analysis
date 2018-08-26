@@ -1,0 +1,1 @@
+These notebooks were used to analyze the data, test the code, evaluate the models and produce visualizations. The scripts might not work after refactor, but are left in case some processing step needs to be redone.

@@ -1,0 +1,1 @@
+This directory contains scripts used for model evaluation, grid search and visualisation.

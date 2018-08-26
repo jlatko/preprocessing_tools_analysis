@@ -1,15 +1,13 @@
 from sklearn.base import BaseEstimator, TransformerMixin, clone
-import pandas as pd
 import numpy as np
-from time import time
-
-from sklearn.linear_model import LinearRegression
-
 
 class ModelBasedImputer(BaseEstimator, TransformerMixin):
+    """ Imputes blanks using specified regressor fitted on the present values. """
+
     def __init__(self, columns, model):
         self.columns = columns
         self.model = model
+
 
     def fit(self, X, y, **fit_params):
         self.regressors = {col: clone(self.model) for col in self.columns if X[col].isnull().any()}
@@ -18,6 +16,7 @@ class ModelBasedImputer(BaseEstimator, TransformerMixin):
             X2 = X.drop(col, axis=1).loc[y2.index].fillna(0)
             regressor.fit(X2, y2)
         return self
+
 
     def transform(self, X):
         for col, regressor in self.regressors.items():

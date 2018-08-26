@@ -2,6 +2,8 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class FeatureProduct(BaseEstimator, TransformerMixin):
+    """ Adds products of all pairs of specified features. """
+
     def __init__(self, columns):
         self.columns = columns
 

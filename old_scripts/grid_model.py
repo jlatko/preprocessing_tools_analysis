@@ -1,6 +1,7 @@
 import json
 import pickle
 import traceback
+
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 from sklearn.feature_selection import SelectFromModel
@@ -18,6 +19,7 @@ from sklearn.model_selection import cross_val_score, KFold, GridSearchCV
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
 from xgboost import XGBClassifier, XGBRegressor
+
 from diagnostics.evaluation import rev_weighted_quad_kappa
 from diagnostics.evaluation import fit_and_eval, rev_weighted_quad_kappa, rmse, error_rate
 from imputers import *
@@ -26,23 +28,22 @@ from diagnostics.grid_search import custom_grid_search
 from config import *
 from transformers import *
 import warnings
-from visualization.plot_results import plot_and_save_results
 
-""" 
-Main script used for performing grid searches and comparing preprocessing methods.
-This file was modified numerous times to test different models. 
-"""
+from visualization.plot_results import plot_and_save_results
 
 warnings.filterwarnings('ignore')
 
 # get labels and ticks for plotting and report
 def get_class(params):
-    model_name =  'baseline'
-
-    if params['clipper']:
-        label = 'clipped'
+    if params['poly']:
+        model_name = 'poly ' + str( next(iter(params['poly'].powers_per_column.values())))
     else:
-        label = 'not clipped'
+        model_name = 'no poly'
+    if params['combinations']:
+        label = 'feat. product'
+    else:
+        label = 'basic'
+    print(model_name, label)
     return model_name, label
 
 def get_class_from_list(setting_list):
@@ -56,18 +57,18 @@ def get_class_from_list(setting_list):
     return get_c
 
 
-TEST_NAME = 'binning'
+TEST_NAME = 'model_based_feat'
 sets = [
     # 'prudential',
-    # 'boston',
+    'boston',
     'houses',
-    # 'heart'
+    'heart'
 ]
-MISSING = True
+MISSING = False
 outliers = [
     0,
-    # 'clip',
-    # 'remove'
+#     'clip',
+#     'remove'
 ]
 
 
@@ -76,19 +77,17 @@ model_results = {}
 for dataset in sets:
     print("Performing tests for ", dataset)
 
-    #  ---  choose dataset  ---
+
     if dataset == 'prudential':
         data, labels, continuous, discrete, dummy, categorical, target, missing = get_prudential()
         train = data.drop(target, axis=1)
         cv = StratifiedKFold(5)
         scorer = rev_weighted_quad_kappa
         predictors = [
-            LabelsClipper(regressor=XGBRegressor(
-              colsample_bytree=1,learning_rate=0.1,
-              max_depth=4, n_estimators=100, n_jobs=4)),
-            LabelsClipper(regressor=LinearRegression(n_jobs=4)),
+            LabelsClipper(regressor=LinearRegression()),
+            # DecisionTreeClassifier(),
+            # KNeighborsClassifier(n_neighbors=5),
         ]
-        predictor = LabelsClipper(regressor=LinearRegression())
         binner = CustomBinaryBinner({ col: {'bins': 7} for col in continuous })
         # BINNER_CONFIG = [{ col: {'bins': 3} for col in continuous },
         #     { col: {'bins': 5} for col in continuous },
@@ -103,28 +102,18 @@ for dataset in sets:
         cv = KFold(5, shuffle=True, random_state=0)
         scorer = rmse
         predictors = [
-            # XGBRegressor(colsample_bytree=0.6,
-            #                   learning_rate=0.05,
-            #                   max_depth=6,
-            #                   n_estimators=500),
             LinearRegression(),
-            Lasso(alpha=0.01),
+            # SVR(),
+            # RandomForestRegressor(),
+            # DecisionTreeRegressor(),
+            # KNeighborsRegressor(n_neighbors=5),
         ]
-
-        predictor = LinearRegression()
         binner = CustomBinner({ col: {'bins': 7} for col in continuous + discrete })
         # BINNER_CONFIG = [{ col: {'bins': 3} for col in continuous + discrete },
         #     { col: {'bins': 5} for col in continuous + discrete },
         #     { col: {'bins': 7} for col in continuous + discrete },
         #     { col: {'values': [train[col].max()]} for col in continuous + discrete }]
         BOX_COX = BOX_COX_B
-        reducers = [
-                None,
-                PCA(10),
-                SelectFromModel(Lasso(alpha=0.001)),
-                # SelectFromModel(Lasso(alpha=0.01)),
-                # SelectFromModel(XGBRegressor(max_depth=4)),
-            ]
         precision = 3
 
     elif dataset == 'houses':
@@ -133,15 +122,10 @@ for dataset in sets:
         scorer = rmse
         precision = 0
         predictors = [
-            # XGBRegressor(
-            #   colsample_bytree=1,learning_rate=0.07,
-            #   max_depth=3, n_estimators=1000),
-            # LinearRegression(),
-            DecisionTreeRegressor(),
-            Lasso()
+            LinearRegression(),
+            # DecisionTreeRegressor(),
+            # KNeighborsRegressor(n_neighbors=5),
         ]
-
-        predictor = LinearRegression()
         train = data.drop(target, axis=1)
         binner = CustomBinaryBinner({ col: {'values': [train[col].max()]} for col in continuous + discrete })
         # BINNER_CONFIG = [{ col: {'bins': 3} for col in continuous + discrete },
@@ -150,12 +134,6 @@ for dataset in sets:
         #     { col: {'values': [train[col].max()]} for col in continuous + discrete }]
         top_cont = ['LotFrontage', 'BsmtFinSF1', 'MasVnrArea', '1stFlrSF', 'GarageArea',
             'TotalBsmtSF', 'GrLivArea']
-        reducers = [
-                None,
-                PCA(70),
-                PCA(80),
-                SelectFromModel(RandomForestRegressor(max_depth=8)),
-            ]
         BOX_COX = BOX_COX_HO
 
     elif dataset == 'heart':
@@ -164,19 +142,12 @@ for dataset in sets:
         cv = KFold(5, shuffle=True, random_state=0)
         scorer = error_rate
         predictors = [
-            XGBClassifier(
-              colsample_bytree=0.8, learning_rate=0.07,
-              max_depth=7, n_estimators=200),
             LogisticRegression(),
-            DecisionTreeClassifier(max_depth=4)
+            # SVC(),
+            # RandomForestClassifier(),
+            # DecisionTreeClassifier(),
+            # KNeighborsClassifier(n_neighbors=5),
         ]
-
-        predictor = LogisticRegression()
-        reducers = [
-                None,
-                PCA(10),
-                SelectFromModel(LogisticRegression(penalty='l1', C=0.999))
-            ]
         # BINNER_CONFIG = { col: {'bins': 3} for col in continuous + discrete }
         binner = CustomBinner({ col: {'bins': 3} for col in continuous + discrete })
         BOX_COX = BOX_COX_HE
@@ -185,82 +156,160 @@ for dataset in sets:
     else:
         continue
 
-
-    #  ---  initialize pipeline  ---
     one_hot = CustomOneHotEncoder(columns=categorical) if dataset != 'boston' else None
     model = Pipeline([
         ('onehot', one_hot),
-        ('clipper', OutliersClipper(continuous)),
-        ('binner', CustomBinner(BINNER_CONFIG_PRUD)),
+        # ('clipper', OutliersClipper(continuous)),
+        # ('binner', CustomBinner(BINNER_CONFIG_PRUD)),
         ('binner2', binner),
-        ('simple_imputer', FillNaTransformer()),
-        # ('zero_filler', ZeroFiller()),  # just in case there are any left
-        ('main_imputer', HotDeckFullImputer(col_k_pairs={})),
-        ('dropper', FeatureDropper(drop=[])),
+        # ('simple_imputer', FillNaTransformer()),
+        ('zero_filler', ZeroFiller()),  # just in case there are any left
+        # ('main_imputer', HotDeckFullImputer(col_k_pairs={})),
         ('poly', PolynomialsAdder(powers_per_column={col: [2] for col in continuous})),
         ('combinations', FeatureProduct(columns=continuous)),
+        ('dropper', FeatureDropper(drop=[])),
         ('boxcox', BoxCoxTransformer(BOX_COX)),
-        ('scaler', RobustScaler()),
+        ('scaler', StandardScaler()),
         ('reduce_dim', None),
         ('predictor', None)
     ])
 
-    params =[ {
-            'clipper': [
-                OutliersClipper(continuous),
-                None
-            ],
-            'binner': [
+    params = [
+        {  # BASELINE
+            'dropper__drop': [[]], # filter out nan flags
+            'binner2': [None],
+            'boxcox': [None],
+            'scaler': [None],
+            'poly': [None],
+            'combinations': [None],
+            'reduce_dim': [
                 None,
-                # CustomBinner(BINNER_CONFIG_PRUD)
             ],
-            'binner2': [
+            'predictor': predictors
+        },
+        {  #
+            'dropper__drop': [[]], # filter out nan flags
+            'binner2': [None],
+            'boxcox': [None],
+            'scaler': [None],
+            'poly': [None],
+            'combinations': [None],
+            'reduce_dim': [
+                SelectFromModel(DecisionTreeClassifier()),
+            ],
+            'reduce_dim__estimator': [
+                DecisionTreeClassifier(),
+                DecisionTreeClassifier(max_depth=4),
+                DecisionTreeClassifier(max_depth=8),
+                DecisionTreeClassifier(max_depth=16),
+                RandomForestClassifier(),
+                RandomForestClassifier(max_depth=4),
+                RandomForestClassifier(max_depth=8),
+                RandomForestClassifier(max_depth=16),
+                XGBClassifier(),
+                XGBClassifier(max_depth=4),
+                XGBClassifier(max_depth=8),
+                XGBClassifier(max_depth=16),
+                LogisticRegression(penalty='l1', C=0.9999),
+                LogisticRegression(penalty='l1', C=0.999),
+                LogisticRegression(penalty='l1', C=0.99),
+                LogisticRegression(penalty='l2', C=0.999),
+                LogisticRegression(penalty='l2', C=0.99),
+                LogisticRegression(penalty='l2', C=0.9),
+            ],
+            'predictor': predictors
+        },
+        {  # BASELINE
+            'dropper__drop': [[]], # filter out nan flags
+            'boxcox': [None],
+            'scaler': [None],
+            'reduce_dim': [
                 None,
-                binner
             ],
-            'simple_imputer': [
-                FillNaTransformer(mean=missing, nan_flag=missing),
+            'predictor': predictors
+        },
+        {  #
+            'dropper__drop': [[]], # filter out nan flags
+            'boxcox': [None],
+            'scaler': [None],
+            'reduce_dim': [
+                SelectFromModel(DecisionTreeClassifier()),
             ],
-            'main_imputer': [
-                None,
-                HotDeckFullImputer(col_k_pairs=[(col, None) for col in missing], default_k=3),
-                HotDeckFullImputer(col_k_pairs=[(col, None) for col in missing], default_k=5),
-                HotDeckFullImputer(col_k_pairs=[(col, None) for col in missing], default_k=7),
-                ModelBasedFullImputer(columns=missing, model=DecisionTreeRegressor()),
-                ModelBasedFullImputer(columns=missing, model=RandomForestRegressor()),
-                ModelBasedFullImputer(columns=missing, model=LinearRegression()),
-                ModelBasedFullImputer(columns=missing, model=KNeighborsRegressor(n_neighbors=5)),
+            'reduce_dim__estimator': [
+                DecisionTreeClassifier(),
+                DecisionTreeClassifier(max_depth=4),
+                DecisionTreeClassifier(max_depth=8),
+                DecisionTreeClassifier(max_depth=16),
+                RandomForestClassifier(),
+                RandomForestClassifier(max_depth=4),
+                RandomForestClassifier(max_depth=8),
+                RandomForestClassifier(max_depth=16),
+                XGBClassifier(),
+                XGBClassifier(max_depth=4),
+                XGBClassifier(max_depth=8),
+                XGBClassifier(max_depth=16),
+                LogisticRegression(penalty='l1', C=0.9999),
+                LogisticRegression(penalty='l1', C=0.999),
+                LogisticRegression(penalty='l1', C=0.99),
+                LogisticRegression(penalty='l2', C=0.999),
+                LogisticRegression(penalty='l2', C=0.99),
+                LogisticRegression(penalty='l2', C=0.9),
             ],
-            'poly': [
-                None,
-                PolynomialsAdder(powers_per_column={col: [2] for col in continuous})
-            ],
-            'combinations': [
-                None,
-                FeatureProduct(columns=top_cont),
-            ],
-            'dropper__drop': [
-                [],
-                [col + '_nan' for col in missing],
-            ],
-        }]
+            'predictor': predictors
+        },
+    ]
+    settings = [
+        ('base', 'None'),
+        ('d. tree', 'None'),
+        ('d. tree', 'max_depth=4'),
+        ('d. tree', 'max_depth=8'),
+        ('d. tree', 'max_depth=16'),
+        ('rand. forest', 'None'),
+        ('rand. forest', 'max_depth=4'),
+        ('rand. forest', 'max_depth=8'),
+        ('rand. forest', 'max_depth=16'),
+        ('xgb', 'None'),
+        ('xgb', 'max_depth=4'),
+        ('xgb', 'max_depth=8'),
+        ('xgb', 'max_depth=16'),
+        ('Lasso', 'alpha=0.0001'),
+        ('Lasso', 'alpha=0.001'),
+        ('Lasso', 'alpha=0.01'),
+        ('Ridge', 'alpha=0.001'),
+        ('Ridge', 'alpha=0.01'),
+        ('Ridge', 'alpha=0.1'),
+        ('+f, base', 'None'),
+        ('+f, d. tree', 'None'),
+        ('+f, d. tree', 'max_depth=4'),
+        ('+f, d. tree', 'max_depth=8'),
+        ('+f, d. tree', 'max_depth=16'),
+        ('+f, rand. forest', 'None'),
+        ('+f, rand. forest', 'max_depth=4'),
+        ('+f, rand. forest', 'max_depth=8'),
+        ('+f, rand. forest', 'max_depth=16'),
+        ('+f, xgb', 'None'),
+        ('+f, xgb', 'max_depth=4'),
+        ('+f, xgb', 'max_depth=8'),
+        ('+f, xgb', 'max_depth=16'),
+        ('+f, Lasso', 'alpha=0.0001'),
+        ('+f, Lasso', 'alpha=0.001'),
+        ('+f, Lasso', 'alpha=0.01'),
+        ('+f, Ridge', 'alpha=0.001'),
+        ('+f, Ridge', 'alpha=0.01'),
+        ('+f, Ridge', 'alpha=0.1'),
+    ]
 
-    settings = [] # ...
-
-    # ---  run evaluation  ---
     results = {}
     for o in outliers:
         print("Outliers: ", o)
         start = time()
-        result = custom_grid_search(model, params, data, target, cv, scorer, outliers=o, n_jobs=8)
+        result = custom_grid_search(model, params, data, target, cv, scorer, outliers=o)
         end = time()
         print("Done in: ", end - start, ' s')
         print(result)
         results[o] = result
     try:
         with open('./results/' + TEST_NAME + "_" + dataset + '_pickle.b', 'wb') as fp:
-            pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
-        with open('./results/' + TEST_NAME + "_" + dataset + '_grid.b', 'wb') as fp:
             pickle.dump(results, fp, protocol=pickle.HIGHEST_PROTOCOL)
     except:
         print("error")
